@@ -4,6 +4,8 @@ Selecting the required IP address:
  *  Get-AzureRmPublicIpAddress -ResourceGroupName myResourceGroupVM  | Select IpAddress
 Remote desktop session:
  *  mstsc /v:<publicIpAddress>
+ (OR)
+ Get-AzureRmRemoteDesktopFile -ResourceGroupName "ResourceGroupName" -Name "VirtualMachineName" -Launch
 --------------------------------------------------------------------------------------------------
 
 Finding Power state:
