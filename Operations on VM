@@ -1,0 +1,26 @@
+Connect to VM:
+---------------
+Selecting the required IP address:
+ *  Get-AzureRmPublicIpAddress -ResourceGroupName myResourceGroupVM  | Select IpAddress
+Remote desktop session:
+ *  mstsc /v:<publicIpAddress>
+--------------------------------------------------------------------------------------------------
+
+Finding Power state:
+Get-AzureRmVM `
+    -ResourceGroupName myResourceGroup `
+    -Name myVM `
+    -Status | Select @{n="Status"; e={$_.Statuses[1].Code}}
+
+---------------------------------------------------------------------------------------------------
+Stop virtual machine
+  - Stop-AzureRmVM -ResourceGroupName myResourceGroupVM -Name "myVM" -Force
+****If you want to keep the virtual machine in a provisioned state, use the -StayProvisioned parameter***
+
+Start virtual machine
+
+  Start-AzureRmVM -ResourceGroupName myResourceGroupVM -Name myVM
+  
+Delete resource group
+  Remove-AzureRmResourceGroup -Name myResourceGroupVM -Force
+***************************************************************************************************************
