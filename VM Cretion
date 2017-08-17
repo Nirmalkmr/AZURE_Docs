@@ -1,0 +1,80 @@
+VM creation
+
+Creation of required parameters
+1.	First step – Resource group creation:
+•	New-AzureRmResourceGroup 
+o	New-AzureRmResourceGroup -ResourceGroupName myResourceGroupVM -Location EastUS
+o	(Important parameters – ResourceGroupName, Location)
+
+2.	Second step- create Vnet
+•	Create the subnet first:
+o	New-AzureRmVirtualNetworkSubnetConfig
+•	$subnetConfig = New-AzureRmVirtualNetworkSubnetConfig  -Name mySubnet -AddressPrefix 192.168.1.0/24
+•	(Important parameters – Name, AddressPrefix)
+
+•	Create the VNET:
+o	New-AzureRmVirtualNetwork
+•	 $vnet = New-AzureRmVirtualNetwork  -ResourceGroupName  myResourceGroupVM  -Location EastUS  -Name myVnet  -AddressPrefix 192.168.0.0/16 -Subnet $subnetConfig
+•	(Important parameters – ResourceGroupName, Location, Name, AddressPrefix, Subnet)
+
+3.	Third step - Create public IP address:
+o	New-AzureRmPublicIpAddress
+•	$pip = New-AzureRmPublicIpAddress -ResourceGroupName myResourceGroupVM -Location EastUS -AllocationMethod Static -Name myPublicIPAddress
+•	(Important parameters – ResourceGroupName, Location, AllocationMethod, Name)
+
+
+4.	Fourth Step - Create network interface card
+o	New-AzureRmNetworkInterface
+•	$nic = New-AzureRmNetworkInterface -ResourceGroupName myResourceGroupVM  -Location EastUS -Name myNic -SubnetId $vnet.Subnets[0].Id  -PublicIpAddressId $pip.Id
+•	(Important parameters – ResourceGroupName, Location, Name, SubnetId, PublicIpAddressId)
+
+5.	Fifth step - Create network security group:
+o	Add a nsg rule first.
+o	Add-AzureRmNetworkSecurityRuleConfig
+•	$nsgRule = New-AzureRmNetworkSecurityRuleConfig -Name myNSGRule -Protocol Tcp -Direction Inbound -Priority 1000 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389 -Access Allow
+•	(Important parameters – Name, Protocol, Direction, Priority, SourceAddressPrefix, SourcePortRange, DestinationAddressPrefix, DestinationPortRange, Access)
+o	Create the NSG
+o	 New-AzureRmNetworkSecurityGroup
+•	$nsg = New-AzureRmNetworkSecurityGroup -ResourceGroupName myResourceGroupVM -Location EastUS -Name myNetworkSecurityGroup -SecurityRules $nsgRule
+•	(Important parameters – ResourceGroupName, Location, Name, SecurityRules)
+o	Add NSG to the required subnet
+o	 Set-AzureRmVirtualNetworkSubnetConfig
+•	Set-AzureRmVirtualNetworkSubnetConfig -Name mySubnet  -VirtualNetwork $vnet -NetworkSecurityGroup $nsg -AddressPrefix 192.168.1.0/24
+•	Parameters -  Already specified.
+o	Update the virtual network
+o	Set-AzureRmVirtualNetwork
+•	Set-AzureRmVirtualNetwork -VirtualNetwork $vnet
+---------------------------------------------------------------------------------------------------
+Create virtual machine
+
+A.	Credentials:
+i.	Get-Credential
+•	$cred = Get-Credential
+
+B.	Create the initial configuration:
+i.	 New-AzureRmVMConfig
+•	$vm = New-AzureRmVMConfig -VMName myVM -VMSize Standard_D1
+•	Parameters: VMName, VMSize
+C.	Setting the OS parameter:
+o	 Set-AzureRmVMOperatingSystem
+•	$vm = Set-AzureRmVMOperatingSystem -VM $vm -Windows -ComputerName myVM -Credential $cred -ProvisionVMAgent –EnableAutoUpdate
+•	Parameters: VM , Windows/linux, ComputerName, Credential, ProvisionVMAgent, EnableAutoUpdate
+o	AzureRmVMSourceImage:
+•	$vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName MicrosoftWindowsServer -Offer WindowsServer -Skus 2016-Datacenter -Version latest
+•	Parameters: VM, PublisherName, Offer, Skus, Version
+
+D.	Add the operating system disk:
+o	 Set-AzureRmVMOSDisk
+	$vm = Set-AzureRmVMOSDisk -VM $vm  -Name myOsDisk -DiskSizeInGB 128 -CreateOption FromImage -Caching ReadWrite
+	Parameters: VM, Name, DiskSizeInGB, CreateOption, Caching
+
+E.	Add the network interface card
+o	Add-AzureRmVMNetworkInterface
+	$vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $nic.Id
+
+------------------------------------------------------
+------------------------------------------------------
+New-AzureRmVM
+
+New-AzureRmVM -ResourceGroupName myResourceGroupVM -Location EastUS -VM $vm
+
