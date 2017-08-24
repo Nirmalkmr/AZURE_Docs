@@ -1,0 +1,7 @@
+Steps for Re-sizing a VM:
+  
+Stop-AzureRmVM -ResourceGroupName myResourceGroupVM -Name "myVM" -Force
+$vm = Get-AzureRmVM -ResourceGroupName myResourceGroupVM  -VMName myVM
+$vm.HardwareProfile.VmSize = "Standard_F4s"
+Update-AzureRmVM -VM $vm -ResourceGroupName myResourceGroupVM 
+Start-AzureRmVM -ResourceGroupName myResourceGroupVM  -Name $vm.name
