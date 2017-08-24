@@ -1,0 +1,15 @@
+Getting the power-state:
+
+Get-AzureRmVM `
+    -ResourceGroupName myResourceGroup `
+    -Name myVM `
+    -Status | Select @{n="Status"; e={$_.Statuses[1].Code}}
+    
+Different power-states:
+Starting	----------------->Indicates the virtual machine is being started.
+Running	------------------->Indicates that the virtual machine is running.
+Stopping ------------------>Indicates that the virtual machine is being stopped.
+Stopped	------------------->Indicates that the virtual machine is stopped. Note that virtual machines in the stopped state still incur compute charges.
+Deallocating--------------->Indicates that the virtual machine is being deallocated.
+Deallocated	--------------->Indicates that the virtual machine is completely removed from the hypervisor but still available in the control plane. Virtual machines in the Deallocated state do not incur compute charges.
+-	------------------------->Indicates that the power state of the virtual machine is unknow
